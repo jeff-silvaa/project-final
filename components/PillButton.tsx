@@ -1,4 +1,4 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 interface PillButtonProps {
@@ -6,7 +6,7 @@ interface PillButtonProps {
   onPress: () => void;
   variant?: 'solid' | 'outline';
   width?: number | string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
 }
 
 export default function PillButton({

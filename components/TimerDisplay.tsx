@@ -1,5 +1,4 @@
 import { StyleSheet, Text, View } from 'react-native';
-import React from 'react';
 
 type Phase = 'focus' | 'short_break' | 'long_break';
 

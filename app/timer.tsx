@@ -2,27 +2,42 @@ import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import TimerScreen from '../components/TimerScreen';
 import usePomodoro from '../hooks/usePomodoro';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 export default function TimerPage() {
   const router = useRouter();
-  const { formattedTime, currentCycle, totalCycles, phase, isRunning, start, pause, reset } = usePomodoro();
 
-  useEffect(() => {
-    start();
-  }, []);
+  const {
+    formattedTime,
+    currentCycle,
+    totalCycles,
+    phase,
+    isRunning,
+    start,
+    pause,
+    reset,
+    reloadConfig
+  } = usePomodoro();
 
-  const handleReset = () => {
-    reset();
-    router.replace('/home');
-  };
+  useFocusEffect(
+    useCallback(() => {
+      reloadConfig();
+    }, [])
+  );
 
   return (
     <TimerScreen
       isRunning={isRunning}
       onStart={start}
       onPause={pause}
-      onReset={handleReset}
-      timer={{ formattedTime, currentCycle, totalCycles, phase }}
+      onReset={reset}
+      timer={{
+        formattedTime,
+        currentCycle,
+        totalCycles,
+        phase
+      }}
     />
   );
 }

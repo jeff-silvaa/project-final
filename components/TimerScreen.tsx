@@ -1,6 +1,6 @@
-import { ImageBackground, StyleSheet, Text, View } from 'react-native';
-import React from 'react';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { ImageBackground, StyleSheet, Text, TextInput, View } from 'react-native';
 import PillButton from './PillButton';
 import TimerDisplay from './TimerDisplay';
 
@@ -24,9 +24,10 @@ interface TimerScreenProps {
 
 export default function TimerScreen({ isRunning, onStart, onPause, onReset, timer }: TimerScreenProps) {
   const router = useRouter();
+  const [activityName, setActivityName] = useState('');
 
   return (
-    <ImageBackground source={require('../assets/night-sky.jpg')} style={styles.background} resizeMode="cover">
+    <ImageBackground source={require('../assets/fundo_azul.png')} style={styles.background} resizeMode="cover">
       <View style={styles.overlay} />
       <View style={styles.container}>
         <View style={styles.header}>
@@ -36,7 +37,13 @@ export default function TimerScreen({ isRunning, onStart, onPause, onReset, time
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.activityName}>Nome da Atividade</Text>
+          <TextInput
+                    style={styles.activityName}
+                    placeholder="Nome da Atividade"
+                    placeholderTextColor="rgba(255,255,255,0.5)"
+                    value={activityName}
+                    onChangeText={setActivityName}
+/>
           <TimerDisplay
             formattedTime={timer.formattedTime}
             currentCycle={timer.currentCycle}
@@ -48,11 +55,11 @@ export default function TimerScreen({ isRunning, onStart, onPause, onReset, time
         <View style={styles.footer}>
           {isRunning ? (
             <View style={styles.buttonRow}>
-              <PillButton label="⏸ Pausar" onPress={onPause} variant="outline" width="48%" />
-              <PillButton label="↺ Reiniciar" onPress={onReset} variant="solid" width="48%" />
+              <PillButton label="Pausar" onPress={onPause} variant="outline" width="48%" />
+              <PillButton label="Reiniciar" onPress={onReset} variant="outline" width="48%" />
             </View>
           ) : (
-            <PillButton label="▶ Iniciar pomodoro" onPress={onStart} variant="solid" width="100%" />
+            <PillButton label="▶ Iniciar pomodoro" onPress={onStart} variant="outline" width="100%" />
           )}
         </View>
       </View>
@@ -72,7 +79,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
     paddingTop: 60,
-    paddingBottom: 32,
+    paddingBottom: 82,
     justifyContent: 'space-between',
   },
   header: {
@@ -91,7 +98,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 20,
     fontFamily: 'Raleway_700Bold',
-    marginBottom: 24,
+    marginBottom: 84,
   },
   footer: {
     width: '100%',

@@ -7,7 +7,7 @@ export default function LoginScreen() {
   const router = useRouter();
 
   const handleNavigateHome = () => {
-    router.replace('/home');
+    router.replace('/timer');
   };
 
   return (

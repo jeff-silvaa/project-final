@@ -24,7 +24,9 @@ export interface UsePomodoro {
   start: () => void;
   pause: () => void;
   reset: () => void;
+
   updateConfig: (config: PomodoroConfig) => Promise<void>;
+  reloadConfig: () => Promise<void>;
 }
 
 const STORAGE_KEY = '@pomodoro_config';
@@ -48,104 +50,159 @@ export default function usePomodoro(): UsePomodoro {
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ✅ Refs para evitar stale closure dentro do setInterval
+  // refs para evitar stale closure
   const phaseRef = useRef<Phase>('focus');
   const currentCycleRef = useRef(1);
   const configRef = useRef<PomodoroConfig>(DEFAULT_CONFIG);
 
-  // Mantém os refs sincronizados com o state
-  useEffect(() => { phaseRef.current = phase; }, [phase]);
-  useEffect(() => { currentCycleRef.current = currentCycle; }, [currentCycle]);
-  useEffect(() => { if (config) configRef.current = config; }, [config]);
+  // sincroniza refs
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
+
+  useEffect(() => {
+    currentCycleRef.current = currentCycle;
+  }, [currentCycle]);
+
+  useEffect(() => {
+    if (config) {
+      configRef.current = config;
+    }
+  }, [config]);
 
   const clearTimer = () => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
     intervalRef.current = null;
   };
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const raw = await AsyncStorage.getItem(STORAGE_KEY);
-        const parsed = raw ? JSON.parse(raw) : DEFAULT_CONFIG;
-        setConfig(parsed);
+  // ✅ RECARREGA CONFIG
+  const reloadConfig = async () => {
+    try {
+      const raw = await AsyncStorage.getItem(STORAGE_KEY);
+
+      const parsed = raw
+        ? JSON.parse(raw)
+        : DEFAULT_CONFIG;
+
+      setConfig(parsed);
+      configRef.current = parsed;
+
+      // atualiza timer apenas se não estiver rodando
+      if (!isRunning) {
         setTimeLeft(parsed.focusDuration * 60);
-      } catch {
-        setConfig(DEFAULT_CONFIG);
       }
-    };
-    load();
+    } catch {
+      setConfig(DEFAULT_CONFIG);
+      configRef.current = DEFAULT_CONFIG;
+    }
+  };
+
+  // carrega ao iniciar
+  useEffect(() => {
+    reloadConfig();
   }, []);
 
   const safeConfig = config ?? DEFAULT_CONFIG;
 
-  // ✅ Lógica de transição de fase ao chegar em zero
+  // transição de fases
   const advancePhase = () => {
     const cfg = configRef.current;
     const phase = phaseRef.current;
     const cycle = currentCycleRef.current;
 
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Haptics.notificationAsync(
+      Haptics.NotificationFeedbackType.Success
+    );
 
     if (phase === 'focus') {
       const isLastCycle = cycle >= cfg.totalCycles;
 
       if (isLastCycle) {
-        // Todos os ciclos completos — reinicia
         Notifications.scheduleNotificationAsync({
-          content: { title: '🎉 Sessão completa!', body: 'Você completou todos os ciclos.' },
+          content: {
+            title: '🎉 Sessão completa!',
+            body: 'Você completou todos os ciclos.',
+          },
           trigger: null,
         });
+
         setPhase('long_break');
         phaseRef.current = 'long_break';
+
         setTimeLeft(cfg.longBreak * 60);
       } else {
         Notifications.scheduleNotificationAsync({
-          content: { title: '☕ Pausa curta!', body: 'Descanse por alguns minutos.' },
+          content: {
+            title: '☕ Pausa curta!',
+            body: 'Descanse por alguns minutos.',
+          },
           trigger: null,
         });
+
         setPhase('short_break');
         phaseRef.current = 'short_break';
+
         setTimeLeft(cfg.shortBreak * 60);
       }
     } else if (phase === 'short_break') {
       const nextCycle = cycle + 1;
+
       Notifications.scheduleNotificationAsync({
-        content: { title: '🎯 Foco!', body: `Ciclo ${nextCycle} de ${cfg.totalCycles}` },
+        content: {
+          title: '🎯 Foco!',
+          body: `Ciclo ${nextCycle} de ${cfg.totalCycles}`,
+        },
         trigger: null,
       });
+
       setCurrentCycle(nextCycle);
       currentCycleRef.current = nextCycle;
+
       setPhase('focus');
       phaseRef.current = 'focus';
+
       setTimeLeft(cfg.focusDuration * 60);
     } else {
-      // long_break → reinicia tudo
       Notifications.scheduleNotificationAsync({
-        content: { title: '🔄 Nova sessão!', body: 'Pronto para começar de novo?' },
+        content: {
+          title: '🔄 Nova sessão!',
+          body: 'Pronto para começar de novo?',
+        },
         trigger: null,
       });
+
       setCurrentCycle(1);
       currentCycleRef.current = 1;
+
       setPhase('focus');
       phaseRef.current = 'focus';
+
       setTimeLeft(cfg.focusDuration * 60);
     }
   };
 
   const start = () => {
     if (isRunning) return;
+
     setIsRunning(true);
+
     clearTimer();
 
     intervalRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          // ✅ Chama a transição quando o tempo acabar
           clearTimer();
+
+          setIsRunning(false);
+
           advancePhase();
+
           return 0;
         }
+
         return prev - 1;
       });
     }, 1000);
@@ -153,45 +210,66 @@ export default function usePomodoro(): UsePomodoro {
 
   const pause = () => {
     setIsRunning(false);
+
     clearTimer();
   };
 
   const reset = () => {
     pause();
+
     const cfg = configRef.current;
+
     setPhase('focus');
     phaseRef.current = 'focus';
+
     setCurrentCycle(1);
     currentCycleRef.current = 1;
+
     setTimeLeft(cfg.focusDuration * 60);
   };
 
-  const updateConfig = async (newConfig: PomodoroConfig) => {
+  const updateConfig = async (
+    newConfig: PomodoroConfig
+  ) => {
     setConfig(newConfig);
+
     configRef.current = newConfig;
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newConfig));
+
+    await AsyncStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(newConfig)
+    );
 
     setPhase('focus');
     phaseRef.current = 'focus';
+
     setCurrentCycle(1);
     currentCycleRef.current = 1;
+
     setTimeLeft(newConfig.focusDuration * 60);
+
     setIsRunning(false);
+
     clearTimer();
   };
 
   return {
     timeLeft,
     formattedTime: formatTime(timeLeft),
+
     isRunning,
     phase,
     currentCycle,
+
     totalCycles: safeConfig.totalCycles,
+
     config: safeConfig,
 
     start,
     pause,
     reset,
+
     updateConfig,
+    reloadConfig,
   };
 }

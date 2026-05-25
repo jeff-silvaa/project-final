@@ -1,6 +1,8 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, TextInput, } from 'react-native';
 import { useRouter } from 'expo-router';
 import TimerScreen from '../components/TimerScreen';
+import { useState } from 'react';
+
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -26,4 +28,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+
+  activityName: {
+  color: '#fff',
+  fontSize: 24,
+  textAlign: 'center',
+  fontFamily: 'Raleway_700Bold',
+},
 });
