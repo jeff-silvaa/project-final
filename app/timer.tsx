@@ -14,6 +14,7 @@ export default function TimerPage() {
     totalCycles,
     phase,
     isRunning,
+    isPaused,
     start,
     pause,
     reset,
@@ -29,6 +30,7 @@ export default function TimerPage() {
   return (
     <TimerScreen
       isRunning={isRunning}
+      isPaused={isPaused}
       onStart={start}
       onPause={pause}
       onReset={reset}

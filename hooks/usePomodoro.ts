@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type Phase = 'focus' | 'short_break' | 'long_break';
 
+
 export interface PomodoroConfig {
   focusDuration: number;
   shortBreak: number;
@@ -12,10 +13,12 @@ export interface PomodoroConfig {
   totalCycles: number;
 }
 
+
 export interface UsePomodoro {
   timeLeft: number;
   formattedTime: string;
   isRunning: boolean;
+  isPaused: boolean;
   phase: Phase;
   currentCycle: number;
   totalCycles: number;
@@ -47,6 +50,7 @@ export default function usePomodoro(): UsePomodoro {
   const [isRunning, setIsRunning] = useState(false);
   const [phase, setPhase] = useState<Phase>('focus');
   const [currentCycle, setCurrentCycle] = useState(1);
+  const [isPaused, setIsPaused] = useState(false);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -188,6 +192,7 @@ export default function usePomodoro(): UsePomodoro {
     if (isRunning) return;
 
     setIsRunning(true);
+    setIsPaused(false);
 
     clearTimer();
 
@@ -210,14 +215,18 @@ export default function usePomodoro(): UsePomodoro {
 
   const pause = () => {
     setIsRunning(false);
+    setIsPaused(true);
 
     clearTimer();
   };
 
   const reset = () => {
-    pause();
+  clearTimer();
 
-    const cfg = configRef.current;
+  setIsRunning(false);
+  setIsPaused(false);
+
+  const cfg = configRef.current;
 
     setPhase('focus');
     phaseRef.current = 'focus';
@@ -253,23 +262,23 @@ export default function usePomodoro(): UsePomodoro {
     clearTimer();
   };
 
-  return {
-    timeLeft,
-    formattedTime: formatTime(timeLeft),
+ return {
+  timeLeft,
+  formattedTime: formatTime(timeLeft),
 
-    isRunning,
-    phase,
-    currentCycle,
+  isRunning,
+  isPaused,
+  phase,
+  currentCycle,
 
-    totalCycles: safeConfig.totalCycles,
+  totalCycles: safeConfig.totalCycles,
+  config: safeConfig,
 
-    config: safeConfig,
+  start,
+  pause,
+  reset,
 
-    start,
-    pause,
-    reset,
-
-    updateConfig,
-    reloadConfig,
-  };
+  updateConfig,
+  reloadConfig,
+};
 }

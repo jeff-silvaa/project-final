@@ -8,6 +8,7 @@ type Phase = 'focus' | 'short_break' | 'long_break';
 
 interface TimerScreenProps {
   isRunning: boolean;
+  isPaused: boolean;
   onStart: () => void;
   onPause: () => void;
   onReset: () => void;
@@ -22,7 +23,7 @@ interface TimerScreenProps {
   >;
 }
 
-export default function TimerScreen({ isRunning, onStart, onPause, onReset, timer }: TimerScreenProps) {
+export default function TimerScreen({ isRunning,isPaused, onStart, onPause, onReset, timer }: TimerScreenProps) {
   const router = useRouter();
   const [activityName, setActivityName] = useState('');
 
@@ -59,7 +60,11 @@ export default function TimerScreen({ isRunning, onStart, onPause, onReset, time
               <PillButton label="Reiniciar" onPress={onReset} variant="outline" width="48%" />
             </View>
           ) : (
-            <PillButton label="▶ Iniciar pomodoro" onPress={onStart} variant="outline" width="100%" />
+            <PillButton
+                      label={isPaused ? 'Continuar pomodoro' : 'Iniciar pomodoro'}
+                      onPress={onStart}
+                      variant="outline"
+                      width="100%"  />
           )}
         </View>
       </View>
