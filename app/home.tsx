@@ -1,7 +1,7 @@
 import { StyleSheet, View, TextInput, } from 'react-native';
 import { useRouter } from 'expo-router';
 import TimerScreen from '../components/TimerScreen';
-import { useState } from 'react';
+
 
 
 export default function HomeScreen() {
@@ -15,6 +15,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <TimerScreen
         isRunning={false}
+        isPaused={false}
         onStart={handleStart}
         onPause={() => undefined}
         onReset={() => undefined}

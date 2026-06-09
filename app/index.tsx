@@ -1,7 +1,9 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, ImageBackground } from 'react-native';
 import { useRouter } from 'expo-router';
 import PillButton from '../components/PillButton';
 import GoogleLogo from '../components/GoogleLogo';
+import { Raleway_400Regular, Raleway_700Bold, useFonts } from '@expo-google-fonts/raleway';
+
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -11,7 +13,11 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ImageBackground
+      source={require('../assets/fundo_azul.png')}
+      style={styles.container}
+      resizeMode="cover"
+    >
       <View style={styles.topSection}>
         <Text style={styles.title}>Bem Vindo ao +Focus</Text>
       </View>
@@ -29,14 +35,13 @@ export default function LoginScreen() {
           icon={<GoogleLogo />}
         />
       </View>
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#2257F5',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 60,
