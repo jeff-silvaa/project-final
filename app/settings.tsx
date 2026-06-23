@@ -29,9 +29,14 @@ export default function SettingsScreen() {
       longBreak: Math.max(Number(longBreak) || 1, 1),
       totalCycles: Math.max(Number(totalCycles) || 1, 1),
     };
-
+  
     await updateConfig(next);
-    router.back();
+  
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/');
+    }
   };
 
   const renderField = (
